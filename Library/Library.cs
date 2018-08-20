@@ -7,41 +7,36 @@ using System.Threading.Tasks;
 namespace Library
 {
 	class Library
-	{		
+	{
 		public void Init()
 		{
-			Author a0 = new Author() { FullName = "Gorge stafford" };
-			Author a1 = new Author() { FullName = "Gene Kim" };
-			Author a2 = new Author() { FullName = "Jez Humble" };
-			Author a3 = new Author() { FullName = "Nuddy man" };
-			AddAuthor(a0);
-			AddAuthor(a1);
-			AddAuthor(a2);
-			AddAuthor(a3);
-
+			AddAuthor(new Author() { FullName = "Gorge stafford" });
+			AddAuthor(new Author() { FullName = "Gene Kim" });
+			AddAuthor(new Author() { FullName = "Jez Humble" });
+			AddAuthor(new Author() { FullName = "Nuddy man" });
 			AddUser(new User() { Name = "Kostya" });
 			AddUser(new User() { Name = "Chack" });
 			AddUser(new User() { Name = "Jackie" });
+			AddBook(new Book() { BookName = "The DevOps Handbook", Pages = 512 });
+			AddBook(new Book() { BookName = "Lean Enterprise", Pages = 256 });
+			AddBook(new Book() { BookName = "Very not interesting book", Pages = 2048 });
+			using (EntityModelContainer db = new EntityModelContainer()) {
+				Book book = db.BookSet.FirstOrDefault(b => b.BookName == "The DevOps Handbook");
+				book.Author.Add(db.AuthorSet.FirstOrDefault(a => a.FullName == "Gene Kim"));
+				book.Author.Add(db.AuthorSet.FirstOrDefault(a => a.FullName == "Jez Humble"));			
+				book.UserId = db.UserSet.FirstOrDefault(u => u.Name == "Chack").Id;
 
-			Book b = new Book() { BookName = "The DevOps Handbook", Pages = 512 };
-			b.Author.Add(GetAuthor("Gene Kim"));
-			b.Author.Add(GetAuthor("Jez Humble"));
-			b.UserId = GetUser("Chack").Id;
-			AddBook(b);
-			b = new Book() { BookName = "The Phoenix Project", Pages = 256 };
-			b.Author.Add(GetAuthor("Gorge stafford"));
-			b.Author.Add(GetAuthor("Gene Kim"));
-			b.UserId = GetUser("Jackie").Id;
-			AddBook(b);
-			b = new Book() { BookName = "Lean Enterprise", Pages = 128 };
-			b.Author.Add(GetAuthor("Jez Humble"));
-			b.UserId = GetUser("Chack").Id;
-			AddBook(b);
-			b = new Book() { BookName = "Very not interesting book", Pages = 128 };
-			b.Author.Add(GetAuthor("Nuddy man"));			
-			AddBook(b);
+				book = db.BookSet.FirstOrDefault(b => b.BookName == "Lean Enterprise");
+				book.Author.Add(db.AuthorSet.FirstOrDefault(a => a.FullName == "Gene Kim"));
+				book.Author.Add(db.AuthorSet.FirstOrDefault(a => a.FullName == "Gorge stafford"));
+				book.UserId = db.UserSet.FirstOrDefault(u => u.Name == "Chack").Id;
 
+				book = db.BookSet.FirstOrDefault(b => b.BookName == "Very not interesting book");
+				book.Author.Add(db.AuthorSet.FirstOrDefault(a => a.FullName == "Nuddy man"));
 
+				db.SaveChanges();
+
+			}
 
 		}
 		
@@ -85,6 +80,7 @@ namespace Library
 			{
 				find = db.AuthorSet.FirstOrDefault(a => a.FullName == authorName);
 			}
+			Console.WriteLine($"find author : {find.FullName} ");
 			return find;
 		}
 		public User GetUser(string userName)
@@ -114,6 +110,7 @@ namespace Library
 				{
 					db.AuthorSet.Add(author);
 					db.SaveChanges();
+					Console.WriteLine($"added author : {author.FullName} ");
 				}
 				else
 				{
